@@ -11,7 +11,7 @@ defmodule Slackir.ElixirGirlsChannel do
 
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
-  def handle_in("ping", payload, socket) do
+  def handle_in("new_message", payload, socket) do
     {:reply, {:ok, payload}, socket}
   end
 
