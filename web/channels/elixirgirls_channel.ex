@@ -1,5 +1,6 @@
 defmodule Slackir.ElixirGirlsChannel do
   use Slackir.Web, :channel
+  alias Slackir.{Message}
 
   def join("random:lobby", payload, socket) do
     if authorized?(payload) do
@@ -11,15 +12,19 @@ defmodule Slackir.ElixirGirlsChannel do
 
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
-  def handle_in("new_message", payload, socket) do
-    {:reply, {:ok, payload}, socket}
-  end
 
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (random:lobby).
-  def handle_in("shout", payload, socket) do
-    broadcast socket, "shout", payload
-    {:noreply, socket}
+  def handle_in("new_message", message, socket) do
+    changeset = Message.changeset(%Message{}, message)
+
+    if changeset.valid? do
+      Repo.insert!(changeset)
+      broadcast socket, "new_message", message
+      {:reply, :ok, socket}
+    else
+      {:reply, :error, socket}
+    end
   end
 
   # Add authorization logic here as required.

@@ -61,12 +61,12 @@ let name    = $('#name');
 
 message.on('keypress', event => {
   if (event.keyCode == 13) {
-    channel.push('shout', { name: name.val(), message: message.val() });
+    channel.push('new_message', { name: name.val(), message: message.val() });
     message.val('');
   }
 });
 
-channel.on('shout', payload => {
+channel.on('new_message', payload => {
   list.append(`<b>${payload.name || 'Anonymous'}:</b> ${payload.message}<br>`);
   list.prop({scrollTop: list.prop("scrollHeight")});
 });
