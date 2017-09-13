@@ -4,14 +4,22 @@ defmodule Slackir.ElixirGirlsChannel do
 
   def join("random:lobby", payload, socket) do
     if authorized?(payload) do
+      send self(), :after_join
+
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
   end
 
-  # Channels can be used in a request/response fashion
-  # by sending replies to requests from the client
+  def handle_info(:after_join, socket) do
+    messages = Repo.all(Message)
+    msgs =
+      messages |> Enum.map(&to_msg/1)
+
+    push socket, "messages_history", %{ messages: msgs }
+    { :noreply, socket }
+  end
 
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (random:lobby).
@@ -25,6 +33,13 @@ defmodule Slackir.ElixirGirlsChannel do
   # Add authorization logic here as required.
   defp authorized?(_payload) do
     true
+  end
+
+  defp to_msg(msg) do
+    %{
+      name: msg.name,
+      message: msg.message
+    }
   end
 
   def save_message(message) do
