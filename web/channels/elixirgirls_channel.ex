@@ -1,6 +1,5 @@
 defmodule Slackir.ElixirGirlsChannel do
   use Slackir.Web, :channel
-  alias Slackir.{Message}
 
   def join("random:lobby", payload, socket) do
     if authorized?(payload) do
@@ -13,7 +12,7 @@ defmodule Slackir.ElixirGirlsChannel do
   end
 
   def handle_info(:after_join, socket) do
-    messages = Repo.all(Message)
+    messages = Slackir.Repo.all(Slackir.Message)
     msgs =
       messages |> Enum.map(&to_msg/1)
 
@@ -27,7 +26,6 @@ defmodule Slackir.ElixirGirlsChannel do
     spawn_link(__MODULE__, :save_message, [message])
     broadcast socket, "new_message", message
     {:reply, :ok, socket}
-
   end
 
   # Add authorization logic here as required.
@@ -43,10 +41,10 @@ defmodule Slackir.ElixirGirlsChannel do
   end
 
   def save_message(message) do
-    changeset = Message.changeset(%Message{}, message)
+    changeset = Slackir.Message.changeset(%Slackir.Message{}, message)
 
     if changeset.valid? do
-      Repo.insert!(changeset)
+      Slackir.Repo.insert!(changeset)
     else
       false
     end
